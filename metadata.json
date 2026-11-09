@@ -1,0 +1,6 @@
+{
+  "name": "PISET Cooperative Society Port Harcourt",
+  "description": "Mobile-first Progressive Web App and Admin Treasury Portal for PISET Cooperative Society Port Harcourt — managing thrift savings, Naira contributions, Paystack & bank transfer reconciliation, loans, and maker-checker governance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

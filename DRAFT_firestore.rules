@@ -1,0 +1,354 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'rich4me7576@gmail.com';
+    }
+    function hasRoleDoc() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles/$(request.auth.uid));
+    }
+    function getUserRole() {
+      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role;
+    }
+    function isAdmin() {
+      return isBootstrappedAdmin() || (isVerifiedUser() && hasRoleDoc() && getUserRole() == 'admin');
+    }
+    function isTreasurer() {
+      return isVerifiedUser() && hasRoleDoc() && getUserRole() == 'treasurer';
+    }
+    function isTreasurerOrAdmin() {
+      return isAdmin() || isTreasurer();
+    }
+
+    // Entity Validation Blueprints
+    function isValidRoleAssignment(data) {
+      return data.keys().hasAll(['uid', 'role', 'memberId']) &&
+        data.keys().hasOnly(['uid', 'role', 'memberId']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.role is string && data.role.size() <= 20 && (data.role == 'member' || data.role == 'treasurer' || data.role == 'admin') &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 && data.memberId.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidMember(data) {
+      return data.keys().hasAll(['uid', 'name', 'phone', 'joinDate', 'status', 'monthlyPledge', 'totalSavings', 'role']) &&
+        data.keys().hasOnly(['uid', 'name', 'phone', 'joinDate', 'status', 'monthlyPledge', 'totalSavings', 'role']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.phone is string && data.phone.size() >= 7 && data.phone.size() <= 24 &&
+        data.joinDate is string && data.joinDate.size() >= 8 && data.joinDate.size() <= 32 &&
+        data.status is string && data.status.size() <= 20 && (data.status == 'active' || data.status == 'suspended' || data.status == 'pending') &&
+        data.monthlyPledge is number && data.monthlyPledge >= 0 && data.monthlyPledge <= 100000000 &&
+        data.totalSavings is number && data.totalSavings >= 0 && data.totalSavings <= 1000000000 &&
+        data.role is string && data.role.size() <= 20 && (data.role == 'member' || data.role == 'treasurer' || data.role == 'admin');
+    }
+
+    function isValidContribution(data) {
+      return data.keys().hasAll(['memberId', 'memberName', 'month', 'amount', 'method', 'status', 'receiptUrl', 'paystackRef', 'uploadedBy', 'approvedBy', 'rejectionReason', 'createdAt']) &&
+        data.keys().hasOnly(['memberId', 'memberName', 'month', 'amount', 'method', 'status', 'receiptUrl', 'paystackRef', 'uploadedBy', 'approvedBy', 'rejectionReason', 'createdAt']) &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 && data.memberId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.memberName is string && data.memberName.size() >= 2 && data.memberName.size() <= 120 &&
+        data.month is string && data.month.size() == 7 && data.month.matches('^[0-9]{4}-[0-9]{2}$') &&
+        data.amount is number && data.amount > 0 && data.amount <= 100000000 &&
+        data.method is string && data.method.size() <= 20 && (data.method == 'paystack' || data.method == 'bank_transfer') &&
+        data.status is string && data.status.size() <= 20 && (data.status == 'pending' || data.status == 'confirmed' || data.status == 'rejected') &&
+        data.receiptUrl is string && data.receiptUrl.size() <= 2048 &&
+        data.paystackRef is string && data.paystackRef.size() <= 128 &&
+        data.uploadedBy is string && data.uploadedBy.size() >= 1 && data.uploadedBy.size() <= 128 &&
+        data.approvedBy is string && data.approvedBy.size() <= 128 &&
+        data.rejectionReason is string && data.rejectionReason.size() <= 500 &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40;
+    }
+
+    function isValidLoan(data) {
+      return data.keys().hasAll(['memberId', 'memberName', 'principal', 'interest', 'startDate', 'schedule', 'status', 'purpose', 'daysOverdue']) &&
+        data.keys().hasOnly(['memberId', 'memberName', 'principal', 'interest', 'startDate', 'schedule', 'status', 'purpose', 'daysOverdue']) &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 && data.memberId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.memberName is string && data.memberName.size() >= 2 && data.memberName.size() <= 120 &&
+        data.principal is number && data.principal > 0 && data.principal <= 500000000 &&
+        data.interest is number && data.interest >= 0 && data.interest <= 100000000 &&
+        data.startDate is string && data.startDate.size() >= 8 && data.startDate.size() <= 32 &&
+        data.schedule is list && data.schedule.size() <= 24 && (data.schedule.size() == 0 || data.schedule[0] is map) &&
+        data.status is string && data.status.size() <= 20 && (data.status == 'pending' || data.status == 'active' || data.status == 'repaid' || data.status == 'overdue' || data.status == 'declined') &&
+        data.purpose is string && data.purpose.size() >= 2 && data.purpose.size() <= 300 &&
+        data.daysOverdue is number && data.daysOverdue >= 0 && data.daysOverdue <= 3650;
+    }
+
+    function isValidRepayment(data) {
+      return data.keys().hasAll(['loanId', 'memberId', 'amount', 'date', 'ledgerEntryId']) &&
+        data.keys().hasOnly(['loanId', 'memberId', 'amount', 'date', 'ledgerEntryId']) &&
+        data.loanId is string && data.loanId.size() >= 1 && data.loanId.size() <= 128 && data.loanId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 && data.memberId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.amount is number && data.amount > 0 && data.amount <= 500000000 &&
+        data.date is string && data.date.size() >= 8 && data.date.size() <= 40 &&
+        data.ledgerEntryId is string && data.ledgerEntryId.size() >= 1 && data.ledgerEntryId.size() <= 128 && data.ledgerEntryId.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidLedgerEntry(data) {
+      return data.keys().hasAll(['type', 'amount', 'source', 'status', 'approvedBy', 'timestamp']) &&
+        data.keys().hasOnly(['type', 'amount', 'source', 'status', 'approvedBy', 'timestamp']) &&
+        data.type is string && data.type.size() <= 30 && (data.type == 'contribution' || data.type == 'loan_disbursement' || data.type == 'loan_repayment') &&
+        data.amount is number && data.amount > 0 && data.amount <= 500000000 &&
+        data.source is string && data.source.size() >= 2 && data.source.size() <= 200 &&
+        data.status is string && data.status.size() <= 20 && (data.status == 'settled' || data.status == 'reversed') &&
+        data.approvedBy is string && data.approvedBy.size() >= 1 && data.approvedBy.size() <= 128 &&
+        data.timestamp is string && data.timestamp.size() >= 10 && data.timestamp.size() <= 40;
+    }
+
+    function isValidReminder(data) {
+      return data.keys().hasAll(['loanId', 'memberId', 'tier', 'sentAt', 'channel']) &&
+        data.keys().hasOnly(['loanId', 'memberId', 'tier', 'sentAt', 'channel']) &&
+        data.loanId is string && data.loanId.size() >= 1 && data.loanId.size() <= 128 && data.loanId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 && data.memberId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.tier is string && data.tier.size() <= 30 && (data.tier == 'pre_due_3d' || data.tier == 'due_date' || data.tier == 'overdue_1_29d' || data.tier == 'overdue_30d' || data.tier == 'overdue_60d' || data.tier == 'overdue_90d') &&
+        data.sentAt is string && data.sentAt.size() >= 10 && data.sentAt.size() <= 40 &&
+        data.channel is string && data.channel.size() <= 20 && (data.channel == 'sms' || data.channel == 'whatsapp' || data.channel == 'in_app' || data.channel == 'multi');
+    }
+
+    function isValidAuditLog(data) {
+      return data.keys().hasAll(['actor', 'action', 'target', 'timestamp']) &&
+        data.keys().hasOnly(['actor', 'action', 'target', 'timestamp']) &&
+        data.actor is string && data.actor.size() >= 1 && data.actor.size() <= 128 &&
+        data.action is string && data.action.size() >= 2 && data.action.size() <= 120 &&
+        data.target is string && data.target.size() >= 1 && data.target.size() <= 250 &&
+        data.timestamp is string && data.timestamp.size() >= 10 && data.timestamp.size() <= 40;
+    }
+
+    function isValidCommunityLoanView(data) {
+      return data.keys().hasAll(['name', 'status']) &&
+        data.keys().hasOnly(['name', 'status']) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.status is string && data.status.size() <= 20 && (data.status == 'Active' || data.status == 'Repaying');
+    }
+
+    function isValidBiometricCredential(data) {
+      return data.keys().hasAll(['uid', 'memberId', 'credentialId', 'modality', 'deviceLabel', 'pinHash', 'biometricEnabled', 'pinEnabled', 'enrolledAt', 'lastVerifiedAt']) &&
+        data.keys().hasOnly(['uid', 'memberId', 'credentialId', 'modality', 'deviceLabel', 'pinHash', 'biometricEnabled', 'pinEnabled', 'enrolledAt', 'lastVerifiedAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 && data.memberId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.credentialId is string && data.credentialId.size() >= 4 && data.credentialId.size() <= 256 &&
+        data.modality is string && data.modality.size() <= 20 && (data.modality == 'fingerprint' || data.modality == 'face_id' || data.modality == 'passkey') &&
+        data.deviceLabel is string && data.deviceLabel.size() >= 2 && data.deviceLabel.size() <= 120 &&
+        data.pinHash is string && data.pinHash.size() >= 8 && data.pinHash.size() <= 128 &&
+        data.biometricEnabled is bool &&
+        data.pinEnabled is bool &&
+        data.enrolledAt is string && data.enrolledAt.size() >= 10 && data.enrolledAt.size() <= 40 &&
+        data.lastVerifiedAt is string && data.lastVerifiedAt.size() >= 10 && data.lastVerifiedAt.size() <= 40;
+    }
+
+    function isValidFcmToken(data) {
+      return data.keys().hasAll(['uid', 'memberId', 'token', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'memberId', 'token', 'updatedAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.memberId is string && data.memberId.size() >= 1 && data.memberId.size() <= 128 &&
+        data.token is string && data.token.size() >= 10 && data.token.size() <= 512 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 40;
+    }
+
+    function isValidPushNotification(data) {
+      return data.keys().hasAll(['recipientMemberId', 'category', 'title', 'body', 'createdAt', 'read', 'fcmMessageId']) &&
+        data.keys().hasOnly(['recipientMemberId', 'category', 'title', 'body', 'createdAt', 'read', 'fcmMessageId']) &&
+        data.recipientMemberId is string && data.recipientMemberId.size() >= 1 && data.recipientMemberId.size() <= 128 &&
+        data.category is string && data.category.size() <= 40 && (data.category == 'upcoming_repayment' || data.category == 'overdue_payment' || data.category == 'cooperative_announcement') &&
+        data.title is string && data.title.size() >= 2 && data.title.size() <= 140 &&
+        data.body is string && data.body.size() >= 2 && data.body.size() <= 500 &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40 &&
+        data.read is bool &&
+        data.fcmMessageId is string && data.fcmMessageId.size() >= 4 && data.fcmMessageId.size() <= 128;
+    }
+
+    // Collection 1: /roles/{uid}
+    match /roles/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && (request.auth.uid == uid || isAdmin());
+      allow list: if isSignedIn() && (existing().uid == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(uid) && isValidRoleAssignment(incoming()) && isAdmin();
+      allow update: if isVerifiedUser() && isValidId(uid) && isValidRoleAssignment(incoming()) && incoming().uid == existing().uid && isAdmin();
+      allow delete: if false;
+    }
+
+    // Collection 2: /members/{memberId} (Contains PII: phone, pledge, savings)
+    match /members/{memberId} {
+      allow get: if isSignedIn() && isValidId(memberId) && (existing().uid == request.auth.uid || isTreasurerOrAdmin());
+      allow list: if isSignedIn() && (existing().uid == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(memberId) && isValidMember(incoming()) && (
+        isAdmin() ||
+        (incoming().uid == request.auth.uid && incoming().role == 'member' && incoming().status == 'active')
+      );
+      allow update: if isVerifiedUser() && isValidId(memberId) && isValidMember(incoming()) &&
+        incoming().uid == existing().uid && incoming().joinDate == existing().joinDate && (
+          isAdmin() ||
+          (isTreasurer() && incoming().diff(existing()).affectedKeys().hasOnly(['totalSavings', 'monthlyPledge'])) ||
+          (existing().uid == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['monthlyPledge']) && incoming().role == existing().role && incoming().status == existing().status)
+        );
+      allow delete: if false;
+    }
+
+    // Collection 3: /contributions/{contributionId} (Enforces Maker-Checker Rule)
+    match /contributions/{contributionId} {
+      allow get: if isSignedIn() && isValidId(contributionId) && (existing().uploadedBy == request.auth.uid || isTreasurerOrAdmin());
+      allow list: if isSignedIn() && (existing().uploadedBy == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(contributionId) && isValidContribution(incoming()) &&
+        incoming().uploadedBy == request.auth.uid &&
+        incoming().status == 'pending' &&
+        incoming().approvedBy == '' &&
+        exists(/databases/$(database)/documents/members/$(incoming().memberId));
+      allow update: if isVerifiedUser() && isValidId(contributionId) && isValidContribution(incoming()) &&
+        existing().status == 'pending' &&
+        incoming().memberId == existing().memberId &&
+        incoming().uploadedBy == existing().uploadedBy &&
+        incoming().amount == existing().amount &&
+        incoming().month == existing().month &&
+        incoming().createdAt == existing().createdAt && (
+          // Action 1: Maker-Checker Approval or Rejection by Treasurer/Admin who is NOT the uploader
+          (isTreasurerOrAdmin() &&
+            existing().uploadedBy != request.auth.uid &&
+            incoming().approvedBy == request.auth.uid &&
+            (incoming().status == 'confirmed' || (incoming().status == 'rejected' && incoming().rejectionReason.size() >= 3)) &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'approvedBy', 'rejectionReason']))
+        );
+      allow delete: if false;
+    }
+
+    // Collection 4: /loans/{loanId}
+    match /loans/{loanId} {
+      allow get: if isSignedIn() && isValidId(loanId) && (existing().memberId == request.auth.uid || isTreasurerOrAdmin());
+      allow list: if isSignedIn() && (existing().memberId == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(loanId) && isValidLoan(incoming()) &&
+        incoming().memberId == request.auth.uid &&
+        incoming().status == 'pending' &&
+        incoming().daysOverdue == 0 &&
+        exists(/databases/$(database)/documents/members/$(incoming().memberId));
+      allow update: if isVerifiedUser() && isValidId(loanId) && isValidLoan(incoming()) &&
+        existing().status != 'repaid' && existing().status != 'declined' &&
+        incoming().memberId == existing().memberId &&
+        incoming().principal == existing().principal && (
+          isAdmin() ||
+          (isTreasurer() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'schedule', 'daysOverdue']))
+        );
+      allow delete: if false;
+    }
+
+    // Collection 5: /repayments/{repaymentId}
+    match /repayments/{repaymentId} {
+      allow get: if isSignedIn() && isValidId(repaymentId) && (existing().memberId == request.auth.uid || isTreasurerOrAdmin());
+      allow list: if isSignedIn() && (existing().memberId == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(repaymentId) && isValidRepayment(incoming()) &&
+        isTreasurerOrAdmin() &&
+        exists(/databases/$(database)/documents/loans/$(incoming().loanId)) &&
+        existsAfter(/databases/$(database)/documents/ledger/$(incoming().ledgerEntryId));
+      allow update, delete: if false;
+    }
+
+    // Collection 6: /ledger/{entryId} (Strictly Append-Only)
+    match /ledger/{entryId} {
+      allow get: if isSignedIn() && isValidId(entryId) && isTreasurerOrAdmin();
+      allow list: if isSignedIn() && (existing().approvedBy == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(entryId) && isValidLedgerEntry(incoming()) &&
+        incoming().approvedBy == request.auth.uid &&
+        isTreasurerOrAdmin();
+      allow update, delete: if false;
+    }
+
+    // Collection 7: /reminders/{reminderId}
+    match /reminders/{reminderId} {
+      allow get: if isSignedIn() && isValidId(reminderId) && (existing().memberId == request.auth.uid || isTreasurerOrAdmin());
+      allow list: if isSignedIn() && (existing().memberId == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(reminderId) && isValidReminder(incoming()) &&
+        isTreasurerOrAdmin() &&
+        exists(/databases/$(database)/documents/loans/$(incoming().loanId));
+      allow update, delete: if false;
+    }
+
+    // Collection 8: /auditLog/{logId} (Strictly Append-Only)
+    match /auditLog/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && isTreasurerOrAdmin();
+      allow list: if isSignedIn() && (existing().actor == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(logId) && isValidAuditLog(incoming()) &&
+        incoming().actor == request.auth.uid &&
+        isTreasurerOrAdmin();
+      allow update, delete: if false;
+    }
+
+    // Collection 9: /communityLoans/{loanId} (Privacy-Safe Community Feed Projection)
+    match /communityLoans/{loanId} {
+      allow get: if isSignedIn() && isValidId(loanId);
+      allow list: if isSignedIn() && (existing().status == 'Active' || existing().status == 'Repaying');
+      allow create: if isVerifiedUser() && isValidId(loanId) && isValidCommunityLoanView(incoming()) && isTreasurerOrAdmin();
+      allow update: if isVerifiedUser() && isValidId(loanId) && isValidCommunityLoanView(incoming()) &&
+        (isAdmin() || (isTreasurer() && incoming().diff(existing()).affectedKeys().hasOnly(['status'])));
+      allow delete: if isVerifiedUser() && isValidId(loanId) && isAdmin();
+    }
+
+    // Collection 10: /biometricCredentials/{uid} (Owner-Only Biometric & PIN Security)
+    match /biometricCredentials/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && request.auth.uid == uid;
+      allow list: if isSignedIn() && existing().uid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(uid) && isValidBiometricCredential(incoming()) &&
+        request.auth.uid == uid && incoming().uid == request.auth.uid;
+      allow update: if isVerifiedUser() && isValidId(uid) && isValidBiometricCredential(incoming()) &&
+        request.auth.uid == uid && incoming().uid == existing().uid &&
+        incoming().enrolledAt == existing().enrolledAt && (
+          isAdmin() ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['credentialId', 'modality', 'deviceLabel', 'pinHash', 'biometricEnabled', 'pinEnabled', 'lastVerifiedAt'])
+        );
+      allow delete: if isVerifiedUser() && isValidId(uid) && request.auth.uid == uid;
+    }
+
+    // Collection 11: /fcmTokens/{uid} (Firebase Cloud Messaging Device Tokens)
+    match /fcmTokens/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && (request.auth.uid == uid || isTreasurerOrAdmin());
+      allow list: if isSignedIn() && (existing().uid == request.auth.uid || isBootstrappedAdmin());
+      allow create: if isVerifiedUser() && isValidId(uid) && isValidFcmToken(incoming()) &&
+        request.auth.uid == uid && incoming().uid == request.auth.uid;
+      allow update: if isVerifiedUser() && isValidId(uid) && isValidFcmToken(incoming()) &&
+        request.auth.uid == uid && incoming().uid == existing().uid && (
+          isAdmin() ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['token', 'updatedAt'])
+        );
+      allow delete: if isVerifiedUser() && isValidId(uid) && request.auth.uid == uid;
+    }
+
+    // Collection 12: /notifications/{notificationId} (FCM Push Notifications)
+    match /notifications/{notificationId} {
+      allow get: if isSignedIn() && isValidId(notificationId) && (
+        existing().recipientMemberId == 'all' ||
+        existing().recipientMemberId == request.auth.uid ||
+        isTreasurerOrAdmin()
+      );
+      allow list: if isSignedIn() && (
+        existing().recipientMemberId == 'all' ||
+        existing().recipientMemberId == request.auth.uid ||
+        isBootstrappedAdmin()
+      );
+      allow create: if isVerifiedUser() && isValidId(notificationId) && isValidPushNotification(incoming()) && isTreasurerOrAdmin();
+      allow update: if isVerifiedUser() && isValidId(notificationId) && isValidPushNotification(incoming()) &&
+        incoming().recipientMemberId == existing().recipientMemberId &&
+        incoming().category == existing().category &&
+        incoming().createdAt == existing().createdAt && (
+          isAdmin() ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['read'])
+        );
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,571 @@
+{
+  "entities": {
+    "RoleAssignment": {
+      "title": "RoleAssignment",
+      "description": "Maps a Firebase Auth UID to a cooperative role (member, treasurer, admin) and member profile ID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "description": "Cooperative security role",
+          "enum": ["member", "treasurer", "admin"]
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Associated member document ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        }
+      },
+      "required": ["uid", "role", "memberId"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "Registered cooperative member profile in PISET Cooperative Society Port Harcourt.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Owner Auth UID",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Full legal name of the member",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "description": "Nigerian phone number",
+          "minLength": 7,
+          "maxLength": 24
+        },
+        "joinDate": {
+          "type": "string",
+          "description": "ISO date when member joined",
+          "minLength": 8,
+          "maxLength": 32
+        },
+        "status": {
+          "type": "string",
+          "description": "Membership standing",
+          "enum": ["active", "suspended", "pending"]
+        },
+        "monthlyPledge": {
+          "type": "number",
+          "description": "Monthly thrift savings pledge in Naira"
+        },
+        "totalSavings": {
+          "type": "number",
+          "description": "Confirmed cumulative savings balance in Naira"
+        },
+        "role": {
+          "type": "string",
+          "description": "Member role within the society",
+          "enum": ["member", "treasurer", "admin"]
+        }
+      },
+      "required": ["uid", "name", "phone", "joinDate", "status", "monthlyPledge", "totalSavings", "role"]
+    },
+    "Contribution": {
+      "title": "Contribution",
+      "description": "Monthly savings or thrift contribution via Paystack or manual bank transfer.",
+      "type": "object",
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "description": "ID of contributing member",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "memberName": {
+          "type": "string",
+          "description": "Display name of contributing member",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "month": {
+          "type": "string",
+          "description": "Target contribution month in YYYY-MM format",
+          "minLength": 7,
+          "maxLength": 7,
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Contribution amount in Naira"
+        },
+        "method": {
+          "type": "string",
+          "description": "Payment channel",
+          "enum": ["paystack", "bank_transfer"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Settlement state",
+          "enum": ["pending", "confirmed", "rejected"]
+        },
+        "receiptUrl": {
+          "type": "string",
+          "description": "Receipt image URL or data reference",
+          "maxLength": 2048
+        },
+        "paystackRef": {
+          "type": "string",
+          "description": "Paystack transaction reference",
+          "maxLength": 128
+        },
+        "uploadedBy": {
+          "type": "string",
+          "description": "UID of the user who uploaded/initiated the contribution (maker)",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "approvedBy": {
+          "type": "string",
+          "description": "UID of the treasurer/admin who approved or settled (checker)",
+          "maxLength": 128
+        },
+        "rejectionReason": {
+          "type": "string",
+          "description": "Reason when rejected by checker",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation",
+          "minLength": 10,
+          "maxLength": 40
+        }
+      },
+      "required": ["memberId", "memberName", "month", "amount", "method", "status", "receiptUrl", "paystackRef", "uploadedBy", "approvedBy", "rejectionReason", "createdAt"]
+    },
+    "Loan": {
+      "title": "Loan",
+      "description": "Cooperative member loan record with principal, interest, schedule, and overdue status.",
+      "type": "object",
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "description": "ID of borrowing member",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "memberName": {
+          "type": "string",
+          "description": "Full name of borrowing member",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "principal": {
+          "type": "number",
+          "description": "Loan principal in Naira"
+        },
+        "interest": {
+          "type": "number",
+          "description": "Total interest in Naira"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "ISO start date",
+          "minLength": 8,
+          "maxLength": 32
+        },
+        "schedule": {
+          "type": "array",
+          "description": "Bounded repayment installment schedule (max 24 months)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Lifecycle status of the loan",
+          "enum": ["pending", "active", "repaid", "overdue", "declined"]
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Stated purpose of the loan",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "daysOverdue": {
+          "type": "number",
+          "description": "Days past due date"
+        }
+      },
+      "required": ["memberId", "memberName", "principal", "interest", "startDate", "schedule", "status", "purpose", "daysOverdue"]
+    },
+    "Repayment": {
+      "title": "Repayment",
+      "description": "Loan repayment installment linked to an append-only ledger entry.",
+      "type": "object",
+      "properties": {
+        "loanId": {
+          "type": "string",
+          "description": "Target loan ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Repaying member ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Repayment amount in Naira"
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO date of repayment",
+          "minLength": 8,
+          "maxLength": 40
+        },
+        "ledgerEntryId": {
+          "type": "string",
+          "description": "Corresponding ledger entry ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        }
+      },
+      "required": ["loanId", "memberId", "amount", "date", "ledgerEntryId"]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Immutable append-only financial ledger record for every cooperative money movement.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Category of money movement",
+          "enum": ["contribution", "loan_disbursement", "loan_repayment"]
+        },
+        "amount": {
+          "type": "number",
+          "description": "Transaction amount in Naira"
+        },
+        "source": {
+          "type": "string",
+          "description": "Payment channel or origin reference",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "description": "Settlement state",
+          "enum": ["settled", "reversed"]
+        },
+        "approvedBy": {
+          "type": "string",
+          "description": "UID or system identifier that authorized the entry",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp",
+          "minLength": 10,
+          "maxLength": 40
+        }
+      },
+      "required": ["type", "amount", "source", "status", "approvedBy", "timestamp"]
+    },
+    "Reminder": {
+      "title": "Reminder",
+      "description": "Automated or manual loan repayment reminder notification log.",
+      "type": "object",
+      "properties": {
+        "loanId": {
+          "type": "string",
+          "description": "Loan ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Target member ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "tier": {
+          "type": "string",
+          "description": "Reminder escalation tier",
+          "enum": ["pre_due_3d", "due_date", "overdue_1_29d", "overdue_30d", "overdue_60d", "overdue_90d"]
+        },
+        "sentAt": {
+          "type": "string",
+          "description": "ISO timestamp when sent",
+          "minLength": 10,
+          "maxLength": 40
+        },
+        "channel": {
+          "type": "string",
+          "description": "Delivery channel",
+          "enum": ["sms", "whatsapp", "in_app", "multi"]
+        }
+      },
+      "required": ["loanId", "memberId", "tier", "sentAt", "channel"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable governance audit log entry.",
+      "type": "object",
+      "properties": {
+        "actor": {
+          "type": "string",
+          "description": "UID of actor",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "action": {
+          "type": "string",
+          "description": "Action identifier",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "target": {
+          "type": "string",
+          "description": "Target entity ID or summary",
+          "minLength": 1,
+          "maxLength": 250
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp",
+          "minLength": 10,
+          "maxLength": 40
+        }
+      },
+      "required": ["actor", "action", "target", "timestamp"]
+    },
+    "CommunityLoanView": {
+      "title": "CommunityLoanView",
+      "description": "Privacy-preserving projection of active loans exposing ONLY member name and status chip.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Member display name",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "status": {
+          "type": "string",
+          "description": "Public status chip label",
+          "enum": ["Active", "Repaying"]
+        }
+      },
+      "required": ["name", "status"]
+    },
+    "BiometricCredential": {
+      "title": "BiometricCredential",
+      "description": "WebAuthn biometric passkey (Fingerprint / Face ID) and salted 4-digit PIN record linked to Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Member profile ID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "credentialId": {
+          "type": "string",
+          "description": "WebAuthn PublicKeyCredential ID",
+          "minLength": 4,
+          "maxLength": 256
+        },
+        "modality": {
+          "type": "string",
+          "description": "Biometric authenticator modality",
+          "enum": ["fingerprint", "face_id", "passkey"]
+        },
+        "deviceLabel": {
+          "type": "string",
+          "description": "Device or platform authenticator name",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "pinHash": {
+          "type": "string",
+          "description": "Salted digest of the member 4-digit PIN",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "biometricEnabled": {
+          "type": "boolean",
+          "description": "Whether Fingerprint/Face ID login is active"
+        },
+        "pinEnabled": {
+          "type": "boolean",
+          "description": "Whether 4-digit PIN login is active"
+        },
+        "enrolledAt": {
+          "type": "string",
+          "description": "ISO timestamp of enrollment",
+          "minLength": 10,
+          "maxLength": 40
+        },
+        "lastVerifiedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last biometric or PIN verification",
+          "minLength": 10,
+          "maxLength": 40
+        }
+      },
+      "required": ["uid", "memberId", "credentialId", "modality", "deviceLabel", "pinHash", "biometricEnabled", "pinEnabled", "enrolledAt", "lastVerifiedAt"]
+    },
+    "FcmTokenRegistration": {
+      "title": "FcmTokenRegistration",
+      "description": "Firebase Cloud Messaging device token registration for push notifications.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Associated member ID",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "token": {
+          "type": "string",
+          "description": "FCM registration token",
+          "minLength": 10,
+          "maxLength": 512
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp",
+          "minLength": 10,
+          "maxLength": 40
+        }
+      },
+      "required": ["uid", "memberId", "token", "updatedAt"]
+    },
+    "PushNotification": {
+      "title": "PushNotification",
+      "description": "FCM push notification record for upcoming repayments, overdue payments, and cooperative announcements.",
+      "type": "object",
+      "properties": {
+        "recipientMemberId": {
+          "type": "string",
+          "description": "Target member ID or 'all' for cooperative broadcasts",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "category": {
+          "type": "string",
+          "description": "Push notification trigger category",
+          "enum": ["upcoming_repayment", "overdue_payment", "cooperative_announcement"]
+        },
+        "title": {
+          "type": "string",
+          "description": "Notification headline",
+          "minLength": 2,
+          "maxLength": 140
+        },
+        "body": {
+          "type": "string",
+          "description": "Notification message body",
+          "minLength": 2,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp",
+          "minLength": 10,
+          "maxLength": 40
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Whether member has read the notification"
+        },
+        "fcmMessageId": {
+          "type": "string",
+          "description": "Firebase Cloud Messaging delivery ID",
+          "minLength": 4,
+          "maxLength": 128
+        }
+      },
+      "required": ["recipientMemberId", "category", "title", "body", "createdAt", "read", "fcmMessageId"]
+    }
+  },
+  "firestore": {
+    "/roles/{uid}": {
+      "schema": { "$ref": "#/entities/RoleAssignment" },
+      "description": "Role lookup table mapping Auth UIDs to cooperative roles (member, treasurer, admin)."
+    },
+    "/members/{memberId}": {
+      "schema": { "$ref": "#/entities/Member" },
+      "description": "Cooperative member profiles containing PII (phone, savings, pledges)."
+    },
+    "/contributions/{contributionId}": {
+      "schema": { "$ref": "#/entities/Contribution" },
+      "description": "Member savings contributions via Paystack or manual transfer with maker-checker governance."
+    },
+    "/loans/{loanId}": {
+      "schema": { "$ref": "#/entities/Loan" },
+      "description": "Member loan requests, active schedules, and overdue statuses."
+    },
+    "/repayments/{repaymentId}": {
+      "schema": { "$ref": "#/entities/Repayment" },
+      "description": "Recorded loan repayments linked to ledger entries."
+    },
+    "/ledger/{entryId}": {
+      "schema": { "$ref": "#/entities/LedgerEntry" },
+      "description": "Append-only financial ledger of all confirmed cooperative money changes."
+    },
+    "/reminders/{reminderId}": {
+      "schema": { "$ref": "#/entities/Reminder" },
+      "description": "Automated and manual loan reminder dispatch logs."
+    },
+    "/auditLog/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Append-only audit trail for governance and administrative actions."
+    },
+    "/communityLoans/{loanId}": {
+      "schema": { "$ref": "#/entities/CommunityLoanView" },
+      "description": "Sanitized community view returning ONLY name and status chip (Active / Repaying)."
+    },
+    "/biometricCredentials/{uid}": {
+      "schema": { "$ref": "#/entities/BiometricCredential" },
+      "description": "Member WebAuthn biometric passkey and salted PIN configuration."
+    },
+    "/fcmTokens/{uid}": {
+      "schema": { "$ref": "#/entities/FcmTokenRegistration" },
+      "description": "Firebase Cloud Messaging device token registrations for push delivery."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/PushNotification" },
+      "description": "FCM push notification inbox for upcoming repayments, overdue alerts, and cooperative announcements."
+    }
+  }
+}
