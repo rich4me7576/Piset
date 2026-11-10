@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ArrowRight,
+  BarChart3,
   BellRing,
   Building2,
   Check,
@@ -36,7 +37,7 @@ import {
   generateRepaymentSchedule,
 } from '../utils/coopRules';
 
-export type MemberTab = 'home' | 'pay' | 'loans' | 'community';
+export type MemberTab = 'home' | 'pay' | 'loans' | 'statistics' | 'community';
 
 interface MemberAppProps {
   member: MemberRecord;
@@ -358,16 +359,16 @@ export const MemberApp: React.FC<MemberAppProps> = ({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-5 pb-28 lg:pb-12">
+    <div className="mx-auto w-full max-w-6xl px-3 sm:px-5 pt-3 pb-20 sm:pb-6 overflow-x-hidden">
       {/* Desktop Secondary Sub-Navigation for Member Experience */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 pb-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
             MEMBERS EXPERIENCE PISET COOPERATIVE SOCIETY
           </p>
           <h1
             data-testid="member-welcome-heading"
-            className="text-xl font-bold text-slate-900 sm:text-2xl"
+            className="text-lg font-bold text-slate-900 sm:text-xl leading-tight"
           >
             {isSignedIn
               ? `Welcome back, ${signedInUserName || member.name}`
@@ -375,7 +376,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <div
             className="hidden sm:flex items-center gap-1 rounded-xl bg-slate-100 p-1"
             role="tablist"
@@ -386,6 +387,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 { id: 'home', label: 'Home', icon: Home },
                 { id: 'pay', label: 'Pay', icon: Wallet },
                 { id: 'loans', label: 'Loans', icon: Landmark },
+                { id: 'statistics', label: 'Statistics', icon: BarChart3 },
                 { id: 'community', label: 'Community', icon: Users },
               ] as const
             ).map((tab) => {
@@ -396,15 +398,16 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                   key={tab.id}
                   type="button"
                   role="tab"
+                  data-testid={`member-tab-${tab.id}`}
                   aria-selected={isActive}
                   onClick={() => onChangeTab(tab.id)}
-                  className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${
+                  className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
                     isActive
                       ? 'bg-emerald-900 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3.5 w-3.5" />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -415,10 +418,10 @@ export const MemberApp: React.FC<MemberAppProps> = ({
             type="button"
             onClick={onOpenNotifications}
             data-testid="open-fcm-notifications-btn"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 whitespace-nowrap"
+            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 whitespace-nowrap"
             aria-label="Open FCM Push Notifications"
           >
-            <BellRing className="h-4 w-4 text-emerald-800" />
+            <BellRing className="h-3.5 w-3.5 text-emerald-800" />
             <span>Push Alerts</span>
             {unreadPushCount > 0 && (
               <span
@@ -434,32 +437,32 @@ export const MemberApp: React.FC<MemberAppProps> = ({
             type="button"
             onClick={onOpenBiometricSetup}
             data-testid="open-biometric-setup-btn"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 whitespace-nowrap"
+            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 whitespace-nowrap"
             aria-label="Configure PIN and Biometric Login"
           >
-            <Fingerprint className="h-4 w-4 text-emerald-800" />
+            <Fingerprint className="h-3.5 w-3.5 text-emerald-800" />
             <span>Biometrics & PIN</span>
           </button>
 
           <button
             type="button"
             onClick={onTriggerPinLock}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 whitespace-nowrap"
+            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 whitespace-nowrap"
             aria-label="Lock screen with PIN"
           >
-            <Lock className="h-4 w-4 text-emerald-800" />
+            <Lock className="h-3.5 w-3.5 text-emerald-800" />
             <span>Lock</span>
           </button>
         </div>
       </div>
 
-      {/* TAB 1: HOME */}
+      {/* TAB 1: HOME (Compact & Fitted to Device Screen) */}
       {activeTab === 'home' && (
-        <div className="space-y-6">
+        <div className="space-y-3.5">
           {!isSignedIn && (
             <div
               data-testid="member-unauthenticated-banner"
-              className="rounded-2xl border border-emerald-800/20 bg-emerald-950/5 px-5 py-3.5 flex flex-wrap items-center justify-between gap-3"
+              className="rounded-2xl border border-emerald-800/20 bg-emerald-950/5 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5"
             >
               <div className="text-xs text-slate-700">
                 <strong className="text-emerald-950">
@@ -474,7 +477,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                   type="button"
                   onClick={onOpenAuthModal}
                   data-testid="member-signin-sync-btn"
-                  className="min-h-[40px] rounded-xl bg-emerald-900 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-800 whitespace-nowrap"
+                  className="min-h-[38px] rounded-xl bg-emerald-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-800 whitespace-nowrap"
                 >
                   Sign In to Sync Account
                 </button>
@@ -483,21 +486,21 @@ export const MemberApp: React.FC<MemberAppProps> = ({
           )}
 
           {/* Top Split: Private Savings Card + Loan Eligibility Meter */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-stretch">
+          <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-12 items-stretch">
             {/* Private Savings Card */}
             <section
               aria-label="Private Thrift Savings Card"
-              className="lg:col-span-7 flex flex-col justify-between rounded-3xl bg-emerald-950 p-6 sm:p-8 text-white shadow-sm"
+              className="lg:col-span-7 flex flex-col justify-between rounded-2xl bg-emerald-950 p-4 sm:p-5 text-white shadow-sm"
             >
               <div>
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200">
                     Confirmed Thrift Savings Balance
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowBalance((prev) => !prev)}
-                    className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl bg-emerald-900/80 px-3 text-xs font-medium text-emerald-100 hover:bg-emerald-800 transition-colors"
+                    className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center gap-1.5 rounded-xl bg-emerald-900/80 px-2.5 text-xs font-medium text-emerald-100 hover:bg-emerald-800 transition-colors"
                     aria-label={
                       showBalance
                         ? 'Hide savings balance'
@@ -506,12 +509,12 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                   >
                     {showBalance ? (
                       <>
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff className="h-3.5 w-3.5" />
                         <span>Hide</span>
                       </>
                     ) : (
                       <>
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5" />
                         <span>Show</span>
                       </>
                     )}
@@ -519,7 +522,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 </div>
 
                 <div
-                  className="mt-3 font-mono text-3xl sm:text-4xl font-bold tracking-tight tabular-nums text-white"
+                  className="mt-2 font-mono text-2xl sm:text-3xl font-bold tracking-tight tabular-nums text-white"
                   data-testid="member-savings-balance"
                 >
                   {showBalance
@@ -527,7 +530,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                     : '₦ •••••••••'}
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-emerald-200/90">
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-emerald-200/90">
                   <span>
                     Monthly Pledge:{' '}
                     <strong
@@ -552,7 +555,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3 pt-4 border-t border-emerald-800/60">
+              <div className="mt-4 flex flex-wrap items-center gap-2 pt-3 border-t border-emerald-800/60">
                 <button
                   type="button"
                   onClick={() => {
@@ -560,17 +563,26 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                     setPayAmount(String(displayPledge));
                     onChangeTab('pay');
                   }}
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-xs font-bold text-emerald-950 hover:bg-amber-300 transition-colors whitespace-nowrap"
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-amber-400 px-4 py-2 text-xs font-bold text-emerald-950 hover:bg-amber-300 transition-colors whitespace-nowrap"
                 >
                   <span>Pay Monthly Pledge</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
                   onClick={() => onChangeTab('loans')}
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-emerald-700 bg-emerald-900/50 px-4 py-2.5 text-xs font-semibold text-white hover:bg-emerald-800/70 transition-colors whitespace-nowrap"
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-emerald-700 bg-emerald-900/50 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-800/70 transition-colors whitespace-nowrap"
                 >
                   <span>View Loan Schedule</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChangeTab('statistics')}
+                  data-testid="home-goto-statistics-btn"
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-emerald-700/80 bg-emerald-900/40 px-3.5 py-2 text-xs font-semibold text-emerald-100 hover:bg-emerald-800/70 transition-colors whitespace-nowrap"
+                >
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  <span>Statistics &amp; 12M Grid</span>
                 </button>
               </div>
             </section>
@@ -578,11 +590,11 @@ export const MemberApp: React.FC<MemberAppProps> = ({
             {/* Loan Eligibility Meter */}
             <section
               aria-label="Loan Eligibility Meter"
-              className="lg:col-span-5 flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
+              className="lg:col-span-5 flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base font-bold text-slate-900">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900">
                     Loan Eligibility Meter
                   </h2>
                   <span className="text-xs font-semibold text-emerald-800">
@@ -591,7 +603,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 </div>
 
                 <p
-                  className="mt-3 font-mono text-2xl sm:text-3xl font-bold tabular-nums text-emerald-950"
+                  className="mt-2 font-mono text-xl sm:text-2xl font-bold tabular-nums text-emerald-950"
                   data-testid="loan-eligibility-amount"
                 >
                   {showBalance
@@ -599,13 +611,13 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                     : 'Eligible up to ₦ •••••••••'}
                 </p>
 
-                <p className="mt-1.5 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-slate-600 line-clamp-2">
                   {eligibility.reason}
                 </p>
 
                 {/* Progress Bar */}
-                <div className="mt-5">
-                  <div className="flex justify-between text-xs text-slate-600 mb-1.5">
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-slate-600 mb-1">
                     <span>
                       Active Exposure:{' '}
                       <strong className="font-mono text-slate-900">
@@ -619,7 +631,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                       </strong>
                     </span>
                   </div>
-                  <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
                       className="h-full rounded-full bg-emerald-700 transition-all"
                       style={{
@@ -639,28 +651,17 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                       }}
                     />
                   </div>
-                  <p className="mt-1.5 text-[11px] text-slate-500">
-                    Available credit capacity:{' '}
-                    {eligibility.maxLoanAmount > 0
-                      ? Math.round(
-                          (remainingEligibleCredit /
-                            eligibility.maxLoanAmount) *
-                            100
-                        )
-                      : 0}
-                    % of maximum ceiling
-                  </p>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs text-slate-500">
-                  8% flat cooperative rate · Up to 12 months
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500">
+                  8% flat cooperative rate · Up to 12 mos
                 </span>
                 <button
                   type="button"
                   onClick={() => onChangeTab('loans')}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 whitespace-nowrap"
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 whitespace-nowrap"
                 >
                   <span>Request Loan</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -672,15 +673,15 @@ export const MemberApp: React.FC<MemberAppProps> = ({
           {/* Biometric Authentication & FCM Push Alerts Overview Bar */}
           <section
             aria-label="Biometric Security and FCM Push Notifications"
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch"
           >
             {/* Biometric & PIN Card */}
-            <div className="lg:col-span-5 rounded-3xl border border-slate-200 bg-white p-6 flex flex-col justify-between">
+            <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white p-4 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Fingerprint className="h-5 w-5 text-emerald-800 shrink-0" />
-                    <h2 className="text-base font-bold text-slate-900">
+                    <Fingerprint className="h-4 w-4 text-emerald-800 shrink-0" />
+                    <h2 className="text-sm font-bold text-slate-900">
                       Biometric & PIN Security
                     </h2>
                   </div>
@@ -701,15 +702,14 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                       : 'PIN Only'}
                   </span>
                 </div>
-                <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-                  Sign in or unlock your cooperative vault using your custom
-                  password (uppercase, lowercase &amp; special signs), Email OTP
-                  mobile binding, 4-digit PIN, or Fingerprint / Face ID passkey.
+                <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">
+                  Unlock your cooperative vault with your custom password, Email
+                  OTP mobile binding, 4-digit PIN, or Fingerprint / Face ID.
                 </p>
                 {isSignedIn && (
                   <div
                     data-testid="member-security-binding-status"
-                    className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-emerald-900"
+                    className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-emerald-900"
                   >
                     <span>
                       {member.mobileBound
@@ -725,14 +725,14 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                   </div>
                 )}
               </div>
-              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                <span className="text-xs text-slate-500 truncate">
+              <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
+                <span className="text-[11px] text-slate-500 truncate">
                   Password + Passkey + 4-Digit PIN
                 </span>
                 <button
                   type="button"
                   onClick={onOpenBiometricSetup}
-                  className="min-h-[40px] rounded-xl bg-emerald-950/10 px-3.5 py-2 text-xs font-bold text-emerald-950 hover:bg-emerald-950/15 whitespace-nowrap shrink-0"
+                  className="min-h-[36px] rounded-xl bg-emerald-950/10 px-3 py-1.5 text-xs font-bold text-emerald-950 hover:bg-emerald-950/15 whitespace-nowrap shrink-0"
                 >
                   Security &amp; Password
                 </button>
@@ -740,12 +740,12 @@ export const MemberApp: React.FC<MemberAppProps> = ({
             </div>
 
             {/* FCM Push Notifications Feed Summary */}
-            <div className="lg:col-span-7 rounded-3xl border border-slate-200 bg-white p-6 flex flex-col justify-between">
+            <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white p-4 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <BellRing className="h-5 w-5 text-emerald-800 shrink-0" />
-                    <h2 className="text-base font-bold text-slate-900">
+                    <BellRing className="h-4 w-4 text-emerald-800 shrink-0" />
+                    <h2 className="text-sm font-bold text-slate-900">
                       Firebase Cloud Messaging (FCM) Push Alerts
                     </h2>
                   </div>
@@ -755,17 +755,17 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 </div>
 
                 {!isSignedIn ? (
-                  <p className="mt-3 text-xs text-slate-600 leading-relaxed">
+                  <p className="mt-2 text-xs text-slate-600 leading-relaxed">
                     Sign in to synchronize your upcoming loan repayment alerts
                     (3 days pre-due), overdue notices, and cooperative
                     announcements.
                   </p>
                 ) : (
-                  <div className="mt-3 divide-y divide-slate-100">
+                  <div className="mt-2 divide-y divide-slate-100">
                     {pushNotifications.slice(0, 2).map((notif) => (
                       <div
                         key={notif.id}
-                        className="py-2 flex items-start justify-between gap-3"
+                        className="py-1.5 flex items-start justify-between gap-3"
                       >
                         <div className="min-w-0">
                           <div className="text-xs font-bold text-slate-900 truncate">
@@ -788,309 +788,19 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 )}
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
-                <span className="text-xs text-slate-500 truncate">
+              <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
+                <span className="text-[11px] text-slate-500 truncate">
                   3d Pre-Due Repayments · Overdue Alerts · Cooperative Notices
                 </span>
                 <button
                   type="button"
                   onClick={onOpenNotifications}
-                  className="min-h-[40px] rounded-xl bg-emerald-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-800 whitespace-nowrap shrink-0"
+                  className="min-h-[36px] rounded-xl bg-emerald-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-800 whitespace-nowrap shrink-0"
                 >
                   Open Notification Center ({unreadPushCount})
                 </button>
               </div>
             </div>
-          </section>
-
-          {/* Current Cooperative Happenings & Live Synced Updates (From Admin Excel/Word Portal) */}
-          <section
-            aria-label="Current Cooperative Happenings and Live Updates"
-            data-testid="member-happenings-section"
-            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  Current Cooperative Happenings & Live Synced Updates
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Automatically synced from the Admin Portal (Excel & Word
-                  imports) — includes latest contributions, loans, and treasury
-                  liquidity
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
-                <span>
-                  Cooperative Liquidity Pool:{' '}
-                  <strong
-                    data-testid="member-live-liquidity"
-                    className="font-mono text-emerald-900"
-                  >
-                    {showBalance
-                      ? formatNaira(displayLiquidity)
-                      : '₦ •••••••••'}
-                  </strong>
-                </span>
-                {isSignedIn && lastSyncedAt && (
-                  <>
-                    <span>·</span>
-                    <span className="text-emerald-800 font-semibold">
-                      Auto-Synced {new Date(lastSyncedAt).toLocaleTimeString()}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {!isSignedIn ? (
-              <div className="rounded-2xl bg-slate-50 p-6 text-center">
-                <p className="text-xs font-medium text-slate-600">
-                  Sign in to view your synchronized cooperative happenings,
-                  credited contributions, and live treasury updates from the
-                  Admin Portal.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {happenings
-                  .filter(
-                    (h) => h.memberId === 'all' || h.memberId === member.id
-                  )
-                  .slice(0, 5)
-                  .map((hap) => (
-                    <div
-                      key={hap.id}
-                      className="py-3.5 flex flex-wrap items-start justify-between gap-4"
-                    >
-                      <div className="max-w-3xl">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-bold text-slate-900">
-                            {hap.title}
-                          </span>
-                          <span className="text-xs text-slate-400">·</span>
-                          <span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
-                            {hap.sourceFormat === 'excel'
-                              ? 'Excel Schedule Sync'
-                              : hap.sourceFormat === 'word'
-                              ? 'Word Memo Import'
-                              : 'Live Admin Update'}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs text-slate-600 leading-relaxed">
-                          {hap.summary}
-                        </p>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        {hap.amount !== undefined && hap.amount > 0 && (
-                          <div className="font-mono text-sm font-bold tabular-nums text-emerald-900">
-                            {showBalance ? formatNaira(hap.amount) : '₦ ••••••'}
-                          </div>
-                        )}
-                        <div className="text-[11px] text-slate-400">
-                          {new Date(hap.publishedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </section>
-
-          {/* 12-Month Contribution Grid (Paid, Late, Missed) */}
-          <section
-            aria-label="12-Month Contribution Grid"
-            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  12-Month Thrift Contribution Grid
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Monthly pledge compliance record from December 2025 to
-                  November 2026
-                </p>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-slate-600">
-                <span>
-                  Paid:{' '}
-                  <strong className="font-mono text-emerald-800">
-                    {isSignedIn
-                      ? member.contributionGrid.filter(
-                          (m) => m.status === 'paid'
-                        ).length
-                      : 0}
-                  </strong>
-                </span>
-                <span>·</span>
-                <span>
-                  Late:{' '}
-                  <strong className="font-mono text-amber-700">
-                    {isSignedIn
-                      ? member.contributionGrid.filter(
-                          (m) => m.status === 'late'
-                        ).length
-                      : 0}
-                  </strong>
-                </span>
-                <span>·</span>
-                <span>
-                  Missed:{' '}
-                  <strong className="font-mono text-red-700">
-                    {isSignedIn
-                      ? member.contributionGrid.filter(
-                          (m) => m.status === 'missed'
-                        ).length
-                      : 0}
-                  </strong>
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {displayContributionGrid.map((cell) => {
-                const isPaid = isSignedIn && cell.status === 'paid';
-                const isLate = isSignedIn && cell.status === 'late';
-                return (
-                  <div
-                    key={cell.month}
-                    className={`rounded-2xl border p-3.5 transition-colors ${
-                      !isSignedIn
-                        ? 'border-slate-200 bg-slate-50/60'
-                        : isPaid
-                        ? 'border-emerald-200 bg-emerald-50/50'
-                        : isLate
-                        ? 'border-amber-200 bg-amber-50/60'
-                        : 'border-red-200 bg-red-50/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">
-                        {cell.label}
-                      </span>
-                      <span
-                        className={`text-[11px] font-semibold capitalize ${
-                          !isSignedIn
-                            ? 'text-slate-500'
-                            : isPaid
-                            ? 'text-emerald-800'
-                            : isLate
-                            ? 'text-amber-800'
-                            : 'text-red-700'
-                        }`}
-                      >
-                        {isSignedIn ? cell.status : '—'}
-                      </span>
-                    </div>
-                    <div className="mt-2 font-mono text-sm font-semibold tabular-nums text-slate-800">
-                      {showBalance ? formatNaira(cell.amount) : '₦ •••••'}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Recent Member Contributions & Transfer Receipts */}
-          <section
-            aria-label="Recent Contribution Submissions"
-            className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
-          >
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  Your Recent Contributions & Receipts
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Real-time status of Paystack payments and manual bank transfer
-                  receipts
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => onChangeTab('pay')}
-                className="min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-emerald-900 hover:bg-slate-50 whitespace-nowrap"
-              >
-                New Payment
-              </button>
-            </div>
-
-            {memberContributions.length === 0 ? (
-              <div className="rounded-2xl bg-slate-50 p-8 text-center">
-                <p className="text-sm font-medium text-slate-700">
-                  {isSignedIn
-                    ? 'No contributions recorded for this profile yet.'
-                    : 'Sign in to view your synchronized contribution history and payment receipts.'}
-                </p>
-                <button
-                  type="button"
-                  onClick={() =>
-                    isSignedIn && onOpenAuthModal === undefined
-                      ? onChangeTab('pay')
-                      : isSignedIn
-                      ? onChangeTab('pay')
-                      : onOpenAuthModal?.()
-                  }
-                  className="mt-3 min-h-[44px] rounded-xl bg-emerald-900 px-4 py-2 text-xs font-semibold text-white"
-                >
-                  {isSignedIn
-                    ? 'Make First Contribution'
-                    : 'Sign In to Sync Contributions'}
-                </button>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {memberContributions.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex flex-wrap items-center justify-between gap-4 py-3.5"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-900">
-                          {item.month} Thrift Contribution
-                        </span>
-                        <span className="text-xs text-slate-400">·</span>
-                        <span className="text-xs text-slate-600">
-                          {item.method === 'paystack'
-                            ? `Paystack (${item.paystackRef})`
-                            : `Bank Transfer (${item.bankName || 'NIP'})`}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Submitted {new Date(item.createdAt).toLocaleString()}
-                        {item.rejectionReason
-                          ? ` — Reason: ${item.rejectionReason}`
-                          : ''}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <span className="font-mono text-sm font-bold tabular-nums text-slate-900">
-                        {formatNaira(item.amount)}
-                      </span>
-                      <span
-                        className={`text-xs font-semibold ${
-                          item.status === 'confirmed'
-                            ? 'text-emerald-800'
-                            : item.status === 'pending'
-                            ? 'text-amber-700'
-                            : 'text-red-700'
-                        }`}
-                      >
-                        {item.status === 'confirmed'
-                          ? 'Confirmed'
-                          : item.status === 'pending'
-                          ? 'Awaiting confirmation'
-                          : 'Rejected'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
         </div>
       )}
@@ -1747,15 +1457,324 @@ export const MemberApp: React.FC<MemberAppProps> = ({
         </div>
       )}
 
-      {/* TAB 4: COMMUNITY FEED (Privacy-Safe Projection) */}
+      {/* TAB 4: STATISTICS (Placed immediately after Loans: Current Cooperative Happenings & Live Synced Updates + 12-Month Thrift Contribution Grid) */}
+      {activeTab === 'statistics' && (
+        <div
+          data-testid="member-statistics-tab-panel"
+          className="space-y-4"
+        >
+          {/* Current Cooperative Happenings & Live Synced Updates (From Admin Excel/Word Portal) */}
+          <section
+            aria-label="Current Cooperative Happenings and Live Updates"
+            data-testid="member-happenings-section"
+            className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Current Cooperative Happenings & Live Synced Updates
+                </h2>
+                <p className="text-xs text-slate-600">
+                  Automatically synced from the Admin Portal (Excel & Word
+                  imports) — includes latest contributions, loans, and treasury
+                  liquidity
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                <span>
+                  Cooperative Liquidity Pool:{' '}
+                  <strong
+                    data-testid="member-live-liquidity"
+                    className="font-mono text-emerald-900"
+                  >
+                    {showBalance
+                      ? formatNaira(displayLiquidity)
+                      : '₦ •••••••••'}
+                  </strong>
+                </span>
+                {isSignedIn && lastSyncedAt && (
+                  <>
+                    <span>·</span>
+                    <span className="text-emerald-800 font-semibold">
+                      Auto-Synced {new Date(lastSyncedAt).toLocaleTimeString()}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {!isSignedIn ? (
+              <div className="rounded-xl bg-slate-50 p-4 text-center">
+                <p className="text-xs font-medium text-slate-600">
+                  Sign in to view your synchronized cooperative happenings,
+                  credited contributions, and live treasury updates from the
+                  Admin Portal.
+                </p>
+                {onOpenAuthModal && (
+                  <button
+                    type="button"
+                    onClick={onOpenAuthModal}
+                    className="mt-2.5 min-h-[38px] rounded-xl bg-emerald-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-emerald-800"
+                  >
+                    Sign In to Sync Statistics
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {happenings
+                  .filter(
+                    (h) => h.memberId === 'all' || h.memberId === member.id
+                  )
+                  .slice(0, 5)
+                  .map((hap) => (
+                    <div
+                      key={hap.id}
+                      className="py-3 flex flex-wrap items-start justify-between gap-3"
+                    >
+                      <div className="max-w-3xl">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs sm:text-sm font-bold text-slate-900">
+                            {hap.title}
+                          </span>
+                          <span className="text-xs text-slate-400">·</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+                            {hap.sourceFormat === 'excel'
+                              ? 'Excel Schedule Sync'
+                              : hap.sourceFormat === 'word'
+                              ? 'Word Memo Import'
+                              : 'Live Admin Update'}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">
+                          {hap.summary}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        {hap.amount !== undefined && hap.amount > 0 && (
+                          <div className="font-mono text-xs sm:text-sm font-bold tabular-nums text-emerald-900">
+                            {showBalance ? formatNaira(hap.amount) : '₦ ••••••'}
+                          </div>
+                        )}
+                        <div className="text-[11px] text-slate-400">
+                          {new Date(hap.publishedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </section>
+
+          {/* 12-Month Contribution Grid (Paid, Late, Missed) */}
+          <section
+            aria-label="12-Month Contribution Grid"
+            data-testid="member-contribution-grid-section"
+            className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  12-Month Thrift Contribution Grid
+                </h2>
+                <p className="text-xs text-slate-600">
+                  Monthly pledge compliance record from December 2025 to
+                  November 2026
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-slate-600">
+                <span>
+                  Paid:{' '}
+                  <strong className="font-mono text-emerald-800">
+                    {isSignedIn
+                      ? member.contributionGrid.filter(
+                          (m) => m.status === 'paid'
+                        ).length
+                      : 0}
+                  </strong>
+                </span>
+                <span>·</span>
+                <span>
+                  Late:{' '}
+                  <strong className="font-mono text-amber-700">
+                    {isSignedIn
+                      ? member.contributionGrid.filter(
+                          (m) => m.status === 'late'
+                        ).length
+                      : 0}
+                  </strong>
+                </span>
+                <span>·</span>
+                <span>
+                  Missed:{' '}
+                  <strong className="font-mono text-red-700">
+                    {isSignedIn
+                      ? member.contributionGrid.filter(
+                          (m) => m.status === 'missed'
+                        ).length
+                      : 0}
+                  </strong>
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+              {displayContributionGrid.map((cell) => {
+                const isPaid = isSignedIn && cell.status === 'paid';
+                const isLate = isSignedIn && cell.status === 'late';
+                return (
+                  <div
+                    key={cell.month}
+                    className={`rounded-xl border p-3 transition-colors ${
+                      !isSignedIn
+                        ? 'border-slate-200 bg-slate-50/60'
+                        : isPaid
+                        ? 'border-emerald-200 bg-emerald-50/50'
+                        : isLate
+                        ? 'border-amber-200 bg-amber-50/60'
+                        : 'border-red-200 bg-red-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900">
+                        {cell.label}
+                      </span>
+                      <span
+                        className={`text-[11px] font-semibold capitalize ${
+                          !isSignedIn
+                            ? 'text-slate-500'
+                            : isPaid
+                            ? 'text-emerald-800'
+                            : isLate
+                            ? 'text-amber-800'
+                            : 'text-red-700'
+                        }`}
+                      >
+                        {isSignedIn ? cell.status : '—'}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 font-mono text-xs sm:text-sm font-semibold tabular-nums text-slate-800">
+                      {showBalance ? formatNaira(cell.amount) : '₦ •••••'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Recent Member Contributions & Transfer Receipts */}
+          <section
+            aria-label="Recent Contribution Submissions"
+            data-testid="member-recent-contributions-section"
+            className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Your Recent Contributions & Receipts
+                </h2>
+                <p className="text-xs text-slate-600">
+                  Real-time status of Paystack payments and manual bank transfer
+                  receipts
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChangeTab('pay')}
+                className="min-h-[38px] rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-slate-50 whitespace-nowrap"
+              >
+                New Payment
+              </button>
+            </div>
+
+            {memberContributions.length === 0 ? (
+              <div className="rounded-xl bg-slate-50 p-4 text-center">
+                <p className="text-xs sm:text-sm font-medium text-slate-700">
+                  {isSignedIn
+                    ? 'No contributions recorded for this profile yet.'
+                    : 'Sign in to view your synchronized contribution history and payment receipts.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    isSignedIn && onOpenAuthModal === undefined
+                      ? onChangeTab('pay')
+                      : isSignedIn
+                      ? onChangeTab('pay')
+                      : onOpenAuthModal?.()
+                  }
+                  className="mt-2.5 min-h-[38px] rounded-xl bg-emerald-900 px-4 py-1.5 text-xs font-semibold text-white"
+                >
+                  {isSignedIn
+                    ? 'Make First Contribution'
+                    : 'Sign In to Sync Contributions'}
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {memberContributions.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-2.5"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs sm:text-sm font-bold text-slate-900">
+                          {item.month} Thrift Contribution
+                        </span>
+                        <span className="text-xs text-slate-400">·</span>
+                        <span className="text-xs text-slate-600">
+                          {item.method === 'paystack'
+                            ? `Paystack (${item.paystackRef})`
+                            : `Bank Transfer (${item.bankName || 'NIP'})`}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-slate-500">
+                        Submitted {new Date(item.createdAt).toLocaleString()}
+                        {item.rejectionReason
+                          ? ` — Reason: ${item.rejectionReason}`
+                          : ''}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-xs sm:text-sm font-bold tabular-nums text-slate-900">
+                        {formatNaira(item.amount)}
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          item.status === 'confirmed'
+                            ? 'text-emerald-800'
+                            : item.status === 'pending'
+                            ? 'text-amber-700'
+                            : 'text-red-700'
+                        }`}
+                      >
+                        {item.status === 'confirmed'
+                          ? 'Confirmed'
+                          : item.status === 'pending'
+                          ? 'Awaiting confirmation'
+                          : 'Rejected'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* TAB 5: COMMUNITY FEED (Privacy-Safe Projection) */}
       {activeTab === 'community' && (
         <section
           aria-label="Community Active Loans Feed"
-          className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
+          className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6"
         >
-          <div className="flex flex-wrap items-start justify-between gap-4 pb-6 border-b border-slate-100">
+          <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">
                 Community Active Loans Feed
               </h2>
               <p className="mt-1 text-xs text-slate-600 max-w-2xl">
@@ -1775,13 +1794,13 @@ export const MemberApp: React.FC<MemberAppProps> = ({
           </div>
 
           <div
-            className="mt-4 divide-y divide-slate-100"
+            className="mt-3 divide-y divide-slate-100"
             data-testid="community-loan-list"
           >
             {communityFeed.map((entry) => (
               <div
                 key={entry.id}
-                className="flex min-h-[56px] items-center justify-between gap-4 py-3.5"
+                className="flex min-h-[52px] items-center justify-between gap-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-950/10 text-xs font-bold text-emerald-950">
@@ -1879,17 +1898,18 @@ export const MemberApp: React.FC<MemberAppProps> = ({
         </div>
       )}
 
-      {/* Fixed Bottom Navigation Bar for Mobile Ergonomics (<= 15% viewport height) */}
+      {/* Fixed Bottom Navigation Bar for Mobile Ergonomics (5 Tabs: Home, Pay, Loans, Statistics, Community) */}
       <nav
         aria-label="Member Mobile Bottom Navigation"
         className="fixed right-0 bottom-0 left-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-md sm:hidden"
       >
-        <div className="grid h-16 grid-cols-4 items-center">
+        <div className="grid h-16 grid-cols-5 items-center">
           {(
             [
               { id: 'home', label: 'Home', icon: Home },
               { id: 'pay', label: 'Pay', icon: Wallet },
               { id: 'loans', label: 'Loans', icon: Landmark },
+              { id: 'statistics', label: 'Statistics', icon: BarChart3 },
               { id: 'community', label: 'Community', icon: Users },
             ] as const
           ).map((tab) => {
@@ -1899,6 +1919,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
               <button
                 key={tab.id}
                 type="button"
+                data-testid={`mobile-tab-${tab.id}`}
                 onClick={() => onChangeTab(tab.id)}
                 className={`flex min-h-[48px] flex-col items-center justify-center transition-colors ${
                   isActive
@@ -1907,7 +1928,7 @@ export const MemberApp: React.FC<MemberAppProps> = ({
                 }`}
               >
                 <Icon className="h-5 w-5" />
-                <span className="mt-1 text-[11px] leading-none">
+                <span className="mt-1 text-[10px] leading-none">
                   {tab.label}
                 </span>
               </button>

@@ -28,7 +28,7 @@ interface PushNotificationsModalProps {
   onMarkAsRead: (notificationId: string) => void;
   onMarkAllRead: () => void;
   onTriggerTestPush: (category: PushNotificationCategory) => void;
-  onNavigateTab: (tab: 'home' | 'pay' | 'loans' | 'community') => void;
+  onNavigateTab: (tab: 'home' | 'pay' | 'loans' | 'statistics' | 'community') => void;
 }
 
 export const PushNotificationsModal: React.FC<PushNotificationsModalProps> = ({
